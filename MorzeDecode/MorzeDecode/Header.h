@@ -3,19 +3,19 @@
 #define MAX_INPUT_LENGTH 1001
 #define MAX_MORSE_LENGTH 7
 #define MAX_SYMBOLS 50
-#define WITH_PAUSE "pause"
+#define PAUSE "pause"
 #define WITHOUT_PAUSE "without_pause"
 
 enum error_type
 {
 	NoError = -1,
-	InputFileError,
-	OutputFileError,
-	InputFileEmpty,
-	InvalidCharacters,
-	StringSizeOutOfRange,
-	IncorrectDecryptionMode,
-	NoDecryptionMode
+	OutputFileError,			// Невозможно создать указанный выходной файл.										0
+	InputFileError,				// Указанный входной файл не существует или к нему нет доступа.						1
+	InputFileEmpty,				// Входной файл пуст.																2
+	InvalidCharacters,			// Входной файл содержит недопустимые символы.										3
+	StringSizeOutOfRange,		// Размерность сообщения во входном файле находится вне допустимого диапазона.		4
+	NoDecryptionMode,			// Отсутствует указание режима расшифровки.											5
+	IncorrectDecryptionMode		// Выбран некорректный режим расшифровки.											6
 };
 
 char morse_alphabet[MAX_SYMBOLS][MAX_MORSE_LENGTH] = {
@@ -39,10 +39,8 @@ char russian_alphabet[MAX_SYMBOLS] = {
 
 int validate_data(char input[MAX_INPUT_LENGTH], char mode[14]);
 
-void convert_with_pause(char input[MAX_INPUT_LENGTH], char output[MAX_INPUT_LENGTH][MAX_INPUT_LENGTH]);
+void convert_with_pause(char input[MAX_INPUT_LENGTH]);
 
 void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int curPos, char output[MAX_INPUT_LENGTH]);
 
 int convert_symbol(char symbol[MAX_MORSE_LENGTH], char alphabet[MAX_SYMBOLS][MAX_MORSE_LENGTH]);
-
-void print_result(char output[MAX_INPUT_LENGTH][MAX_INPUT_LENGTH]);

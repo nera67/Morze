@@ -7,94 +7,141 @@
 
 #pragma warning(disable : 4996)
 
-int main()
+int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "Rus");
 
-    // -.-----..-..--...-.-..-...-.
-    char input[MAX_INPUT_LENGTH] = ".--.. - ....--. - ";
-    char output[MAX_INPUT_LENGTH] = "";
+    char input[MAX_INPUT_LENGTH] = "";
+    char temp[MAX_INPUT_LENGTH] = "";
     char mode[14];
-    int result;
 
-    convert_without_pause(input, strlen(input), 0, output);
+    int result = validate_data(input, mode);
+
+    if (result == NoError)
+    {
+        if (strcmp(mode, WITHOUT_PAUSE) == 0)
+        {
+            convert_without_pause(input, strlen(input), 0, temp);
+        }
+        else
+        {
+            convert_with_pause(input);
+        }
+    }
+    else
+    {
+        printf("%d", result);
+    }
 
     return 0;
-
-    /*
-    // Ввод сообщения и режима расшифровки
-    printf("Введите сообщение на языке Морзе: ");
-    fgets(input, MAX_INPUT_LENGTH, stdin);
-    input[strcspn(input, "\n")] = 0; // удаляем лишний перенос строки
-    printf("Введите режим расшифровки (pause/without_pause): ");
-    scanf_s("%s", mode);
-    // Проверка корректности входных данных
-    result = validate_data(input, mode);
-    if (result != 0)
-    {
-        printf("Ошибка: некорректные входные данные (код %d)\n", result);
-        return 1;
-    }
-    // Расшифровка сообщения
-    if (strcmp(mode, WITH_PAUSE) == 0)
-    {
-        convert_with_pause(input, output);
-    }
-    else if (strcmp(mode, WITHOUT_PAUSE) == 0)
-    {
-        convert_without_pause(input, output);
-    }
-    // Вывод результата
-    print_result(output);
-    return 0;
-    */
 }
+
 int validate_data(char input[MAX_INPUT_LENGTH], char mode[14])
 {
-    int input_length = strlen(input);
-    // Проверка на длину сообщения
-    if (input_length == 0 || input_length > MAX_INPUT_LENGTH - 1)
+    // Проверка возможности создание выходного файла и его создание OutputFileError
+    FILE* stream;
+    char temp[2];
+    int i = 0;
+    if (fopen_s(&stream, "output.txt", "w") == 0) // Проверка на наличие входного файла и доступа к нему
     {
-        return 1;
+        fclose(stream);
     }
-    // Проверка на режим расшифровки
-    if (strcmp(mode, WITH_PAUSE) != 0 && strcmp(mode, WITHOUT_PAUSE) != 0)
+    else
     {
-        return 2;
+        return OutputFileError;
     }
+
+    if (fopen_s(&stream, "input.txt", "r") == 0) // Проверка на наличие входного файла и доступа к нему
+    {
+        if (fgets(input, MAX_INPUT_LENGTH - 1, stream) == NULL) // Проверка на наличие символов сообщения
+        {
+            return InputFileEmpty;
+        }
+        if (strcmp(input, "\n") == 0) // Проверка на наличие символов сообщения
+        {
+            return InputFileEmpty;
+        }
+        if (fgets(mode, 14, stream) == NULL) // Проверка на наличия режима расшифровки
+        {
+            return NoDecryptionMode;
+        }
+
+        if (strcmp(mode, "\n") == 0)
+        {
+            if (fgets(mode, 14, stream) == NULL) // Проверка на наличия режима расшифровки
+            {
+                return NoDecryptionMode;
+            }
+        }
+
+        if (fgets(temp, 2, stream) != NULL) // Проверка на кол-во символов
+        {
+            return StringSizeOutOfRange;
+        }
+        fclose(stream);
+    }
+    else
+    {
+        return InputFileError;
+    }
+    
     // Проверка на корректность символов сообщения
-    for (int i = 0; i < input_length; i++)
+    for (i = 0; input[i] != NULL && input[i] != '\n'; i++)
     {
         if (input[i] != '.' && input[i] != '-' && input[i] != ' ')
         {
-            return 3;
+            return InvalidCharacters;
         }
     }
-    return 0;
-}
+    *(input + i) = '\0';
 
-void convert_with_pause(char input[MAX_INPUT_LENGTH], char output[MAX_INPUT_LENGTH][MAX_INPUT_LENGTH])
-{
-    int output_index = 0;
-    char symbol[MAX_MORSE_LENGTH];
-    int symbol_length = 0;
-    char* prev_char = input;
-    char* cur_char = input;
-    
-    while (strcmp(cur_char, " ") != 0)
+    // Проверка корректности режима расшифровки
+    if (strcmp(mode, WITHOUT_PAUSE) == 0)
     {
-        cur_char = strstr(cur_char + 1, " ");
-        strncpy(symbol, prev_char + 1, cur_char - prev_char - 1);
-        *(symbol + (cur_char - prev_char - 1)) = '\0';
-        int index = convert_symbol(symbol, morse_alphabet);
-        strncpy(output[0] + output_index, russian_alphabet + index, 1);
-
-        prev_char = cur_char;
-        output_index++;
-        strcpy(symbol, "\0");
+        bool space_exists = false;
+        for (i = 0; input[i] != '\0' && space_exists == false; i++)
+        {
+            space_exists = input[i] == ' ';
+        }
+        if (space_exists)
+        {
+            return IncorrectDecryptionMode;
+        }
+    }
+    else if (!(strcmp(mode, PAUSE) == 0))
+    {
+        return IncorrectDecryptionMode;
     }
 
-    *(output[0] + output_index) = '\0';
+    // Всё ок
+    return NoError;
+}
+
+void convert_with_pause(char input[MAX_INPUT_LENGTH])
+{
+    char output[MAX_INPUT_LENGTH] = "";
+    char symbol[MAX_MORSE_LENGTH];
+    int output_index = 0;
+    int left_index = 0;
+    int rus_index;
+
+    for (int i = 0; input[i] != '\0'; i++)
+    {
+        if (input[i] == ' ')
+        {
+            strncpy(symbol, input + left_index, i - left_index);
+            *(symbol + i - left_index) = '\0';
+            rus_index = convert_symbol(symbol, morse_alphabet);
+            *(output + output_index) = russian_alphabet[rus_index];
+
+            left_index = i + 1;
+            output_index++;
+        }
+    }
+
+    FILE* mf = fopen("output.txt", "w");
+    fprintf(mf, "%s\n", output);
+    fclose(mf);
 }
 
 void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int curPos, char output[MAX_INPUT_LENGTH])
@@ -133,7 +180,9 @@ void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int cu
 
     else
     {
-        printf("%s\n", output);
+        FILE * mf = fopen("output.txt", "a");
+        fprintf(mf, "%s\n", output);
+        fclose(mf);
     }
 }
 
