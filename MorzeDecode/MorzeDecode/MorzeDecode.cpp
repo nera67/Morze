@@ -1,8 +1,8 @@
 ﻿#include <stdio.h>
 #include <string.h>
-#include "Header.h"
 #include <locale.h>
 #include <math.h>
+#include "Header.h"
 
 
 #pragma warning(disable : 4996)
@@ -123,25 +123,50 @@ void convert_with_pause(char input[MAX_INPUT_LENGTH])
     char symbol[MAX_MORSE_LENGTH];
     int output_index = 0;
     int left_index = 0;
-    int rus_index;
+    //int rus_index = 0;
+    bool looping = true;
+    bool error_occurred = false;
 
-    for (int i = 0; input[i] != '\0'; i++)
+    //for (; input[i] != '\0' && i - left_index < MAX_MORSE_LENGTH && rus_index != - 1; i++)
+    for (int i = 0; looping && error_occurred == false; i++)
     {
-        if (input[i] == ' ')
+        if (i - left_index >= MAX_MORSE_LENGTH)
         {
+            error_occurred = true;
+        }
+        else if (input[i] == ' ' || input[i] == '\0')
+        {
+            looping = input[i] != '\0';
             strncpy(symbol, input + left_index, i - left_index);
             *(symbol + i - left_index) = '\0';
-            rus_index = convert_symbol(symbol, morse_alphabet);
-            *(output + output_index) = russian_alphabet[rus_index];
+            //rus_index = convert_symbol(symbol, morse_alphabet);
+            //*(output + output_index) = russian_alphabet[rus_index];
+            
+            if (alphabet.count(symbol) != 0)
+            {
+                *(output + output_index) = alphabet[symbol];
+                left_index = i + 1;
+                output_index++;
+            }
 
-            left_index = i + 1;
-            output_index++;
+            else 
+            {
+                error_occurred = true;
+            }
         }
     }
 
-    FILE* mf = fopen("output.txt", "w");
-    fprintf(mf, "%s\n", output);
-    fclose(mf);
+    //if (i - left_index >= MAX_MORSE_LENGTH || rus_index == - 1)
+    if (error_occurred)
+    {
+        printf("%d", InvalidCharacters);
+    }
+    else
+    {
+        FILE* mf = fopen("output.txt", "w");
+        fprintf(mf, "%s\n", output);
+        fclose(mf);
+    }
 }
 
 void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int curPos, char output[MAX_INPUT_LENGTH])
@@ -160,15 +185,15 @@ void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int cu
 
             strncpy(symbol, input + curPos, n);
             symbol[n] = '\0';
-            int symbol_index = convert_symbol(symbol, morse_alphabet);
+            //int symbol_index = convert_symbol(symbol, morse_alphabet);
             
-            if (symbol_index >= 0)
+            if (alphabet.count(symbol) != 0)
             {
                 char newOutput[MAX_INPUT_LENGTH];
                 strcpy(newOutput, output);
 
                 char russian_symbol[2];
-                strncpy(russian_symbol, russian_alphabet + symbol_index, 1);
+                russian_symbol[0] = alphabet[symbol];
                 russian_symbol[1] = '\0';
                 strcat(newOutput, russian_symbol);
                 convert_without_pause(input, inputLength, curPos + n, newOutput);
@@ -186,17 +211,17 @@ void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int cu
     }
 }
 
-int convert_symbol(char symbol[MAX_MORSE_LENGTH], char alphabet[MAX_SYMBOLS][MAX_MORSE_LENGTH])
-{
-    int index = - 1;
-
-    for (int i = 0; i < MAX_SYMBOLS && index == - 1; i++)
-    {
-        if (strcmp(symbol, alphabet[i]) == 0)
-        {
-            index = i;
-        }
-    }
-
-    return index;
-}
+//int convert_symbol(char symbol[MAX_MORSE_LENGTH], map <string, char> alphabet)
+//{
+//    int index = - 1;
+//
+//    for (int i = 0; i < MAX_SYMBOLS && index == - 1; i++)
+//    {
+//        if (strcmp(symbol, alphabet[i]) == 0)
+//        {
+//            index = i;
+//        }
+//    }
+//
+//    return index;
+//}
