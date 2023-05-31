@@ -57,6 +57,15 @@ dlldata.c
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
 
+<<<<<<< HEAD
+=======
+#IN/OUT Result
+*/input.txt
+*/output.txt
+*/input.txt.bak
+*/output.txt.bak
+
+>>>>>>> 3c71da4 (test git)
 # .NET Core
 project.lock.json
 project.fragment.lock.json
@@ -395,4 +404,8 @@ FodyWeavers.xsd
 *.msp
 
 # JetBrains Rider
+<<<<<<< HEAD
 *.sln.iml
+=======
+*.sln.iml
+>>>>>>> 3c71da4 (test git)
