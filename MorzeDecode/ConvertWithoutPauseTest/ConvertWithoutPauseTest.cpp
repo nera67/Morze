@@ -18,8 +18,10 @@ void get_result(char output[][MAX_INPUT_LENGTH], int count)
 	fclose(stream);
 }
 
+
 namespace ConvertWithoutPauseTest
 {
+
 	TEST_CLASS(ConvertWithoutPauseTest)
 	{
 	public:
@@ -37,8 +39,9 @@ namespace ConvertWithoutPauseTest
 			char result[count][MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = "-";
-
-			convert_without_pause(input, strlen(input), 0, output);
+			char* argv[] = { "program_name", input, "output.txt" };
+			
+			convert_without_pause(input, strlen(input), 0, output, argv);
 			get_result(result, count);
 
 			for (int i = 0; i < count; i++)
@@ -60,8 +63,9 @@ namespace ConvertWithoutPauseTest
 			char result[count][MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = ".";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_without_pause(input, strlen(input), 0, output);
+			convert_without_pause(input, strlen(input), 0, output, argv);
 			get_result(result, count);
 
 			for (int i = 0; i < count; i++)
@@ -83,8 +87,9 @@ namespace ConvertWithoutPauseTest
 			char result[count][MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = "-.-..--..";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_without_pause(input, strlen(input), 0, output);
+			convert_without_pause(input, strlen(input), 0, output, argv);
 			get_result(result, count);
 			for (int i = 0; i < count; i++)
 			{
@@ -105,8 +110,9 @@ namespace ConvertWithoutPauseTest
 			char result[count][MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = "-------";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_without_pause(input, strlen(input), 0, output);
+			convert_without_pause(input, strlen(input), 0, output, argv);
 			get_result(result, count);
 			for (int i = 0; i < count; i++)
 			{
@@ -114,7 +120,7 @@ namespace ConvertWithoutPauseTest
 			}
 		}
 
-		TEST_METHOD(OblyPoints)
+		TEST_METHOD(OnlyPoints)
 		{
 			setlocale(LC_ALL, "Rus");
 
@@ -127,8 +133,9 @@ namespace ConvertWithoutPauseTest
 			char result[count][MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = ".........";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_without_pause(input, strlen(input), 0, output);
+			convert_without_pause(input, strlen(input), 0, output, argv);
 			get_result(result, count);
 			for (int i = 0; i < count; i++)
 			{

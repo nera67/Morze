@@ -33,8 +33,9 @@ namespace ConvertWithPauseTest
 			char expected_result[MAX_INPUT_LENGTH] = "Т\n";
 			char result[MAX_INPUT_LENGTH];
 			char input[MAX_INPUT_LENGTH] = "-";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_with_pause(input);
+			convert_with_pause(input, argv);
 			get_result(result);
 
 			Assert::AreEqual(0, strcmp(result, expected_result));
@@ -52,8 +53,9 @@ namespace ConvertWithPauseTest
 			char expected_result[MAX_INPUT_LENGTH] = { "Е\n" };
 			char result[MAX_INPUT_LENGTH];
 			char input[MAX_INPUT_LENGTH] = ".";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_with_pause(input);
+			convert_with_pause(input, argv);
 			get_result(result);
 
 			Assert::AreEqual(0, strcmp(result, expected_result));
@@ -70,8 +72,9 @@ namespace ConvertWithPauseTest
 			char expected_result[MAX_INPUT_LENGTH] = "АЗБУКАМОРЗЕБЫЛАРАЗРАБОТАНАВ1830ХГОДАХАВ1840ХГОДАХУСОВЕРШЕНСТВОВАНА\n";
 			char result[MAX_INPUT_LENGTH];
 			char input[MAX_INPUT_LENGTH] = ".- --.. -... ..- -.- .- -- --- .-. --.. . -... -.-- .-.. .- .-. .- --.. .-. .- -... --- - .- -. .- .-- .---- ---.. ...-- ----- .... --. --- -.. .- .... .- .-- .---- ---.. ....- ----- .... --. --- -.. .- .... ..- ... --- .-- . .-. ---- . -. ... - .-- --- .-- .- -. .-";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_with_pause(input);
+			convert_with_pause(input, argv);
 			get_result(result);
 			Assert::AreEqual(0, strcmp(result, expected_result));
 		}
@@ -87,8 +90,9 @@ namespace ConvertWithPauseTest
 			char expected_result[MAX_INPUT_LENGTH] = "ОМТ\n";
 			char result[MAX_INPUT_LENGTH];
 			char input[MAX_INPUT_LENGTH] = "--- -- -";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_with_pause(input);
+			convert_with_pause(input, argv);
 			get_result(result);
 			Assert::AreEqual(0, strcmp(result, expected_result));
 		}
@@ -105,8 +109,9 @@ namespace ConvertWithPauseTest
 			char result[MAX_INPUT_LENGTH];
 			char output[MAX_INPUT_LENGTH] = "";
 			char input[MAX_INPUT_LENGTH] = "... .. .. .";
+			char* argv[] = { "program_name", input, "output.txt" };
 
-			convert_with_pause(input);
+			convert_with_pause(input, argv);
 			get_result(result);
 			Assert::AreEqual(0, strcmp(result, expected_result));
 		}

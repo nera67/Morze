@@ -10,6 +10,7 @@
 
 using namespace std;
 
+// Ошибки
 enum error_type
 {
     NoError = -1,
@@ -22,6 +23,7 @@ enum error_type
     IncorrectDecryptionMode		// Выбран некорректный режим расшифровки.											6
 };
 
+// Алфавит
 map <string, char> alphabet = {
     {".-", 'А'}, {"-...", 'Б'}, {".--", 'В'}, {"--.", 'Г'}, {"-..", 'Д'},
     {".", 'Е'}, {"...-", 'Ж'}, {"--..", 'З'}, {"..", 'И'}, {".---", 'Й'},
@@ -36,81 +38,112 @@ map <string, char> alphabet = {
 };
 
 
-int main(int argc, char* argv[])
+int main(const int argc, char* argv[])
 {
+    // Поддержка русского языка
     setlocale(LC_ALL, "Rus");
 
-    char input[MAX_INPUT_LENGTH] = "";
-    char output[MAX_INPUT_LENGTH] = "";
-    char mode[14] = "";
-    char temp[2] = "";
-    int result;
+    char input[MAX_INPUT_LENGTH] = "";      // Сообщение из файла input.txt
+    char output[MAX_INPUT_LENGTH] = "";     // Расшифрованное сообщение, которое будет записано в output.txt
+    char mode[14] = "";                     // Режим расшифровки
+    char temp[2] = "";                      // Если что-то после режима расшифровки было написано, оно попадёт в эту переменную
+    int result;                             // Результат проверок
 
-    result = parse_input_file(input, mode, temp);
+    // Проверка и считывание сообщения из файла
+    result = parse_input_file(input, mode, temp, argv, argc);
 
+    // Если удалось считать сообщение
     if (result == NoError) {
-        result = validate_data(input, mode, temp);
+        // Проверка считанного файла
+        result = validate_data(input, mode, temp, argv, argc);
 
+        // Если сообщение не имеет ошибок
         if (result == NoError)
         {
+            // Если режим расшифровки - без паузы
             if (strcmp(mode, WITHOUT_PAUSE) == 0)
             {
-                convert_without_pause(input, strlen(input), 0, output);
+                // Использовать функцию - расшифровка без паузы
+                convert_without_pause(input, strlen(input), 0, output, argv);
             }
+            // Иначе
             else
             {
-                convert_with_pause(input);
+                // Использовать функцию - расшифровка c паузой
+                convert_with_pause(input, argv);
             }
         }
         else
         {
+            // Вывод ошибки
             printf("%d", result);
         }
     }
-
+    else
+    {
+        // Вывод ошибки
+        printf("%d", result);
+    }
+    //_sleep(100000);
     return 0;
 }
 
-int parse_input_file(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2])
+// Проверка и считывание сообщения из файла
+int parse_input_file(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2], char* argv[], const int argc)
 {
     FILE* stream;
 
-    if (fopen_s(&stream, "input.txt", "r") == 0) // Проверка на наличие входного файла и доступа к нему
+    // Проверка на наличие входного файла и доступа к нему
+    if (argc == 1)
     {
-        fgets(input, MAX_INPUT_LENGTH - 1, stream);
-        fgets(mode, 14, stream);
+        return InputFileError;
+    }
+    else if (fopen_s(&stream, argv[1], "r") == 0)
+    {
+        fgets(input, MAX_INPUT_LENGTH - 1, stream); // Считывание сообщения
+        fgets(mode, 14, stream);    // Считывание режима расшифровки
+
+        // Если сообщение содержит 1000 символов, то
         if (strcmp(mode, "\n") == 0)
         {
-            fgets(mode, 14, stream);
+            fgets(mode, 14, stream);    // Считываем режим расшифровки ещё раз
         }
-        fgets(temp, 2, stream);
+
+        fgets(temp, 2, stream); // Считываем оставшиеся символы
         fclose(stream);
     }
     else
     {
+        // Вывод ошибки
         return InputFileError;
+
     }
+
+    // Вывод ошибки
     return NoError;
 }
 
-//Проверка входных данных
-int validate_data(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2])
+// Проверка входных данных
+int validate_data(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2], char* argv[], const int argc)
 {
     // Проверка возможности создания выходного файла
     FILE* stream;
     int i = 0;
 
-    if (fopen_s(&stream, "output.txt", "w") == 0) // Проверка на наличие выходного файла и доступа к нему
-    {
-        fclose(stream);
-    }
-    else
+    // Проверка на наличие выходного файла и доступа к нему
+    if (argc == 2)
     {
         return OutputFileError;
     }
+    else if (fopen_s(&stream, argv[2], "w") == 0)
+    {
+        fclose(stream);
+    }
+
 
     if (strcmp(input, "") == 0) {
         return InputFileEmpty;
+        printf("%c", "Входной файл пуст");
     }
     if (strcmp(mode, "") == 0) {
         return NoDecryptionMode;
@@ -159,95 +192,112 @@ int validate_data(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2])
     return NoError;
 }
 
-//Расшифровка с паузой
-void convert_with_pause(char input[MAX_INPUT_LENGTH])
+// Расшифровка с паузой
+void convert_with_pause(char input[MAX_INPUT_LENGTH], char* argv[])
 {
-    char output[MAX_INPUT_LENGTH] = "";
-    char symbol[MAX_MORSE_LENGTH];
-    int output_index = 0;
-    int left_index = 0;
-    bool looping = true;
-    bool error_occurred = false;
+    char output[MAX_INPUT_LENGTH] = ""; // Результат работы функции
+    char symbol[MAX_MORSE_LENGTH];      // Текущая комбинация символов Морзе между пробелами
+    int output_index = 0;               // Номер последнего записанного символа в output
+    int left_index = 0;                 // Начало комбинации символов Морзе
+    bool looping = true;                // Дошли ли да конца сообщения
+    bool error_occurred = false;        // Произошла ли ошибка во время расшифровки
 
+    // Пока не дошли до конца сообщения и не встретили недопустимый символ
     for (int i = 0; looping && error_occurred == false; i++)
     {
+        // Если длина символа превышает максимальную длину символа в Морзе
         if (i - left_index >= MAX_MORSE_LENGTH)
         {
+            // То ошибка найдена
             error_occurred = true;
         }
+        // Если дошли до конца слова в сообщении
         else if (input[i] == ' ' || input[i] == '\0')
         {
-            looping = input[i] != '\0';
-            strncpy(symbol, input + left_index, i - left_index);
-            *(symbol + i - left_index) = '\0';
-            
+            looping = input[i] != '\0';                             // Дошли ли до конца сообщения
+            strncpy(symbol, input + left_index, i - left_index);    // Запоминаем букву на Морзе
+            *(symbol + i - left_index) = '\0';                      // Ставим нуль-символ
+
+            // Если в Морзе существует такая последовательность символов
             if (alphabet.count(symbol) != 0)
             {
-                *(output + output_index) = alphabet[symbol];
-                left_index = i + 1;
-                output_index++;
+                *(output + output_index) = alphabet[symbol];    // Добавляем новую букву к результату работы функции (output)
+                left_index = i + 1;                             // Переходим в начало следующей комбинации символов Морзе
+                output_index++;                                 // Увеличиваем номер символа на 1
             }
 
-            else 
+            // Иначе
+            else
             {
+                // Ошибка найдена
                 error_occurred = true;
             }
         }
     }
 
+    // Если ошибка найдена
     if (error_occurred)
     {
+        // Печатаем ошибку
         printf("%d", InvalidCharacters);
     }
+    // Иначе
     else
     {
-        print_result(output);
+        // Сохраняем результат
+        print_result(output, argv);
     }
 }
 
-//Расшифровка без паузы
-void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int curPos, char output[MAX_INPUT_LENGTH])
+// Расшифровка без паузы
+void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int curPos, char output[MAX_INPUT_LENGTH], char* argv[])
 {
+    // Если не дошли до конца сообщения
     if (curPos < inputLength)
     {
-        int n = inputLength - curPos;
-        if (n > 6)
+        int n = inputLength - curPos;   // Максимальная длина комбинации символов Морзе
+        // Если максимальная длина комбинации символов Морзе больше или равна MAX_MORSE_LENGTH, то
+        if (n >= MAX_MORSE_LENGTH)
         {
-            n = 6;
+            // Уменьшаем до MAX_MORSE_LENGTH - 1
+            n = MAX_MORSE_LENGTH - 1;
         }
 
-        while (n > 0)
+        // Для всех длин символов в Морзе
+        for (int length = n; length > 0; length--)
         {
-            char symbol[MAX_MORSE_LENGTH];
+            char symbol[MAX_MORSE_LENGTH];              // Текущий символ
+            strncpy(symbol, input + curPos, length);    // Запоминаем букву на Морзе
+            symbol[length] = '\0';                      // Ставим нуль-символ
 
-            strncpy(symbol, input + curPos, n);
-            symbol[n] = '\0';
-            
+            // Если такой символ есть в Морзе
             if (alphabet.count(symbol) != 0)
             {
-                char newOutput[MAX_INPUT_LENGTH];
-                strcpy(newOutput, output);
+                char newOutput[MAX_INPUT_LENGTH];   // Новый результат функции в данной итерации рекурсии
+                strcpy(newOutput, output);          // Копируем уже найденный результат
 
-                char russian_symbol[2];
-                russian_symbol[0] = alphabet[symbol];
-                russian_symbol[1] = '\0';
-                strcat(newOutput, russian_symbol);
-                convert_without_pause(input, inputLength, curPos + n, newOutput);
+                char russian_symbol[2];                 // Переведённый символ
+                russian_symbol[0] = alphabet[symbol];   // Запоминаем переведённый символ
+                russian_symbol[1] = '\0';               // Ставим нуль-символ
+                strcat(newOutput, russian_symbol);      // Добавляем новый символ к текущему результату функции
+                // Рекурсивно вызываем функцию
+                convert_without_pause(input, inputLength, curPos + length, newOutput, argv);
             }
-
-            n--;
         }
     }
 
+    // Иначе
     else
     {
-        print_result(output);
+        // Сохраняем результат
+        print_result(output, argv);
     }
 }
 
-void print_result(char output[MAX_INPUT_LENGTH])
+// Вывода результата в файл
+void print_result(char output[MAX_INPUT_LENGTH], char* argv[])
 {
-    FILE* mf = fopen("output.txt", "a");
-    fprintf(mf, "%s\n", output);
-    fclose(mf);
+     FILE* mf = fopen(argv[2], "a");
+     fprintf(mf, "%s\n", output);
+     fclose(mf);
 }
