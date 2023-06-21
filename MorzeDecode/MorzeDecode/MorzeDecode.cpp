@@ -53,7 +53,8 @@ int main(const int argc, char* argv[])
     result = parse_input_file(input, mode, temp, argv, argc);
 
     // Если удалось считать сообщение
-    if (result == NoError) {
+    if (result == NoError) 
+    {
         // Проверка считанного файла
         result = validate_data(input, mode, temp, argv, argc);
 
@@ -84,7 +85,6 @@ int main(const int argc, char* argv[])
         // Вывод ошибки
         printf("%d", result);
     }
-    //_sleep(100000);
     return 0;
 }
 
@@ -116,7 +116,6 @@ int parse_input_file(char input[MAX_INPUT_LENGTH], char mode[14], char temp[2], 
     {
         // Вывод ошибки
         return InputFileError;
-
     }
 
     // Вывод ошибки
@@ -211,6 +210,7 @@ void convert_with_pause(char input[MAX_INPUT_LENGTH], char* argv[])
             // То ошибка найдена
             error_occurred = true;
         }
+
         // Если дошли до конца слова в сообщении
         else if (input[i] == ' ' || input[i] == '\0')
         {
@@ -234,7 +234,6 @@ void convert_with_pause(char input[MAX_INPUT_LENGTH], char* argv[])
             }
         }
     }
-
     // Если ошибка найдена
     if (error_occurred)
     {
@@ -255,14 +254,17 @@ void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int cu
     // Если не дошли до конца сообщения
     if (curPos < inputLength)
     {
-        int n = inputLength - curPos;   // Максимальная длина комбинации символов Морзе
-        // Если максимальная длина комбинации символов Морзе больше или равна MAX_MORSE_LENGTH, то
-        if (n >= MAX_MORSE_LENGTH)
-        {
-            // Уменьшаем до MAX_MORSE_LENGTH - 1
-            n = MAX_MORSE_LENGTH - 1;
-        }
+        
+        int n = inputLength - curPos >= MAX_MORSE_LENGTH ? MAX_MORSE_LENGTH - 1 : inputLength - curPos;
+        
+        //int n = inputLength - curPos;   // Максимальная длина комбинации символов Морзе
 
+        //// Если максимальная длина комбинации символов Морзе больше или равна MAX_MORSE_LENGTH, то
+        //if (n >= MAX_MORSE_LENGTH)
+        //{
+        //    // Уменьшаем до MAX_MORSE_LENGTH - 1
+        //    n = MAX_MORSE_LENGTH - 1;
+        //}
         // Для всех длин символов в Морзе
         for (int length = n; length > 0; length--)
         {
@@ -280,12 +282,12 @@ void convert_without_pause(char input[MAX_INPUT_LENGTH], int inputLength, int cu
                 russian_symbol[0] = alphabet[symbol];   // Запоминаем переведённый символ
                 russian_symbol[1] = '\0';               // Ставим нуль-символ
                 strcat(newOutput, russian_symbol);      // Добавляем новый символ к текущему результату функции
+
                 // Рекурсивно вызываем функцию
                 convert_without_pause(input, inputLength, curPos + length, newOutput, argv);
             }
         }
     }
-
     // Иначе
     else
     {
